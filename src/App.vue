@@ -7,16 +7,18 @@ vuex
 unit tests
 websockets
 spring security
+
+Заголовок пляшет от логина
 -->
 <template>
 	<v-app app>
 		<v-app-bar app>
-			<Bar v-bind:setQuery="setQuery"/>
+			<Bar/>
 		</v-app-bar>
 		<v-main>
 			<v-container app>
-				<Main v-bind:query="query"/>
-				{{ users }}
+				<Main/>
+				{{ allUsers }}
 			</v-container>
 		</v-main>
 		<v-footer app>
@@ -32,24 +34,17 @@ import Service from './service/service.js'
 export default {
 	name: 'App',
 	components: { Bar, Main },
-	data() {
-		return {
-			query: 'all-time',		//	перевести всё в store
-			user: null,
-			users: []
-		}
-	},
-	methods: {
-		setQuery(arg) {
-			this.query = arg
-		}
-	},
 	created () {
 		this.$vuetify.theme.dark = true
 		Service.getUsers()
 			.then(response => {
-				this.users = response.data
+				this.$store.commit('allUsers', response.data)
 			})
+	},
+	computed: {
+		allUsers() {
+			return this.$store.state.users
+		}
 	}
 }
 </script>

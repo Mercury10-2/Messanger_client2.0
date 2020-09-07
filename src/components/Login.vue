@@ -1,4 +1,3 @@
-
 <template>
     <v-container fluid app>
     <v-row>
@@ -11,7 +10,7 @@
             <v-card>
                 <v-card-text>
                     <v-container>
-                        <p class="deep-orange--text">{{ incorrectData }}</p>
+                        <p class="deep-orange--text">{{ message }}</p>
                         <v-row>
                             <v-col cols="12">
                                 <v-text-field label="Имя пользователя" v-model="username" v-bind:rules="usernameRules"></v-text-field>
@@ -27,7 +26,7 @@
                 <v-card-actions>
                 <v-spacer></v-spacer>
                 <div>
-                    <v-btn color="blue darken-1" text v-on:click="verifyPassword()">Войти</v-btn>
+                    <v-btn color="blue darken-1" text v-on:click="login()">Войти</v-btn>
                 </div>
                 </v-card-actions>
             </v-card>
@@ -37,8 +36,6 @@
 </template>
 
 <script>
-import Service from '../service/service.js'
-
 export default {
     name: 'Login',
     data() {
@@ -48,37 +45,30 @@ export default {
             password: '',
             usernameRules: [
                 v => !!v || 'Имя не может быть пустым',
-                v => (v && v.length <= 15) || 'Максимум 15 символов (у вас ' + v.length + ')'
+                v => (v && v.length > 2 && v.length <= 15) || 'От 3 до 15 символов (у вас ' + v.length + ')'
             ],
             passwordRules: [
                 v => !!v || 'Пароль не может быть пустым',
-                v => (v && v.length <= 10) || 'Максимум 10 символов (у вас ' + v.length + ')'],
-            incorrectData: ''
+                v => (v && v.length > 5 && v.length <= 10) || 'От 6 до 15 символов (у вас ' + v.length + ')'],
+            message: ''
         }
     },
     methods: {
-        verifyPassword() {                          //  Перенести в сервис
-            if (this.username.length < 3)
-                this.incorrectData = 'Слишком короткое имя'
-            else if (this.username.length > 15)
-                this.incorrectData = 'Максимум 15 символов'
-            else if (this.password.length == 0 || this.password.length > 15)
-                this.incorrectData = 'Пароль должен содержать от 1 до 15 символов'
+        login() {
+            if (this.username.length < 3 || this.username.length > 15)
+                this.message = 'Имя должно содержать от 3 до 15 символов'
+            else if (this.password.length < 6 || this.password.length > 15)
+                this.message = 'Пароль должен содержать от 6 до 15 символов'
             else {
-                Service.verifyPassword(this.username, this.password)
-                    .then(response => {
-                        const user = response.data
-                        if (user.verified == false) {
-                            if (user.error == 'name')
-                                this.incorrectData = 'Пользователь не найден'
-                            else
-                                this.incorrectData = 'Неверный пароль'
-                        }
-                        else {
-                            this.$store.commit('loggedIn', user)
+                if (this.username && this.password) {
+                    this.$store.dispatch('auth/login', { username: this.username, password: this.password })
+                        .then(() => {
                             this.dialog = false
-                        }
-                    })
+                        },
+                        error => {
+                            this.message = (error.response && error.response.data) || error.message || error.toString();
+                        })
+                }
             }
         }
     }

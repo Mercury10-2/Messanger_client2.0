@@ -11,7 +11,7 @@
             <v-menu bottom left>
                 <template v-slot:activator="{ on, attrs }">
                     <v-btn text v-bind="attrs" v-on="on">
-                        {{ currentUser }}
+                        {{ currentUser.username }}
                     </v-btn>
                 </template>
                 <v-list>
@@ -62,21 +62,22 @@ import Profile from './Profile'
 export default {
     name: 'Bar',
     components: { Login, Registration, Profile },
-    props: [ 'setQuery' ],
     methods: {
-        query(arg) {
-            this.setQuery(arg)
+        query(query) {
+            this.$store.commit('setQuery', query)
         },
         logout() {
-            this.$store.commit('logout')
+            //this.$store.commit('logout')
+            this.$store.dispatch('auth/logout')
         }
     },
     computed: {
         isLogged() {
-            return this.$store.state.user
+            //return this.$store.state.user
+            return this.$store.state.auth.status.loggedIn
         },
         currentUser() {
-                return this.$store.state.user.username
+                return this.$store.state.auth.user
         }
     }
 }

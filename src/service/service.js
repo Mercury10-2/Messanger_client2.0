@@ -1,4 +1,3 @@
-
 import axios from 'axios'
 
 const API_URL = 'http://localhost:8080'
@@ -26,12 +25,6 @@ class Service {
     getUsers() {
         return axios.get(`${API_URL}` + '/users')
     }
-
-    //  Change to login(request) after store implemented
-    /*verifyPassword(request) {
-        console.log(request)
-        return axios.post(`${API_URL}` + '/api/auth/signin', request)
-    }*/
 
     verifyPassword(username, password) {
         return axios.post(`${API_URL}` + '/api/auth/signin' + `/${username}/${password}`)

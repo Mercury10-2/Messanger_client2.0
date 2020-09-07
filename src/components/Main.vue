@@ -19,7 +19,6 @@ import List from './List'
 export default {
     name: 'Main',
     components: { List },
-    props: [ 'query' ],
     data() {
         return {
             messages: [],

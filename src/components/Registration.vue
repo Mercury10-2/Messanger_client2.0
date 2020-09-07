@@ -11,7 +11,7 @@
             <v-card>
                 <v-card-text>
                     <v-container>
-                        <p class="deep-orange--text">{{ incorrectData }}</p>
+                        <p class="deep-orange--text">{{ message }}</p>
                         <v-row>
                             <v-col cols="12">
                                 <v-text-field label="Имя пользователя" v-model="username" v-bind:rules="usernameRules"></v-text-field>
@@ -24,7 +24,7 @@
                         </v-row>
                         <v-row>
                             <v-col cols="12">
-                                <v-text-field label="Подтвердите пароль" v-model="passwordCheck" v-bind:rules="passwordRules"></v-text-field>
+                                <v-text-field label="Подтвердите пароль" v-model="passwordCheck"></v-text-field>
                             </v-col>
                         </v-row>
                         <v-row>
@@ -59,56 +59,55 @@
 </template>
 
 <script>
-import Service from '../service/service.js'
-
 export default {
     name: 'Registration',
-    props: [ 'login' ],
     data() {
         return {
             dialog: false,
             username: '',
             password: '',
-            passwordCheck: '',
+            passwordCheck: '',          //  Использовать объект User?
             gender: 'мужчина',
             email: '',
             usernameRules: [
                 v => !!v || 'Имя не может быть пустым',
-                v => (v && v.length <= 15) || 'Максимум 15 символов (у вас ' + v.length + ')'
+                v => (v && v.length > 2 && v.length < 16) || 'От 3 до 15 символов (у вас ' + v.length + ')'
             ],
             passwordRules: [
-                v => !!v || 'Пароль не может быть пустым',
-                v => (v && v.length <= 15) || 'Максимум 15 символов (у вас ' + v.length + ')'
+                v => !!v || 'Неверный формат пароля',
+                v => (v && v.length > 5 && v.length < 16) || 'От 6 до 15 символов (у вас ' + v.length + ')'
             ],
             emailRules: [
                 v => !!v || 'Необходимо указать почтовый адрес',
                 v => (v && v.length <= 25) || 'Максимум 25 символов (у вас ' + v.length + ')'
             ],
-            incorrectData: ''
+            message: ''
         }
     },
     methods: {
         registration() {
             if (this.username.length < 3 || this.username.length > 15)
-                this.incorrectData = 'Имя должно содержать от 3 до 15 символов'
+                this.message = 'Имя должно содержать от 3 до 15 символов'
             else if (this.password.length < 6 || this.password.length > 15)
-                this.incorrectData = 'Пароль должен содержать от 6 до 15 символов'
+                this.message = 'Пароль должен содержать от 6 до 15 символов'
             else if (this.password != this.passwordCheck)
-                this.incorrectData = 'Пароли не совпадают'
+                this.message = 'Пароли не совпадают'
             else if (!this.validateEmail())
-                this.incorrectData = 'Неверный почтовый адрес'
+                this.message = 'Неверный почтовый адрес'
             else {
-                Service.registration(this.username, this.password, this.gender, this.email)
-                    .then(response => {/*
-                        let user = response.data
-                        if (user.verified == false)
-                            this.incorrectData = 'Пользователь с таким именем уже существует'
-                        else {
-                            this.login(user)
-                            this.dialog = false
-                        }*/
-                        console.log(response.data)
+                if (this.username && this.password && this.gender && this.email) {
+                    this.$store.dispatch('auth/register', {
+                        username: this.username,
+                        password: this.password,
+                        gender: this.gender,
+                        email: this.email
+                    }).then(data => {
+                        this.message = data.message
+                    },
+                    error => {
+                        this.message = (error.response && error.response.data) || error.message || error.toString()
                     })
+                }
             }
         },
         validateEmail() {
